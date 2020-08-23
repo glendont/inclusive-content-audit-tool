@@ -232,9 +232,9 @@ Depending on the size of your document, AWS Textract and the annotation algorith
 
 ## 8. Authors
 
-Glendon Thaiw, AWS ([GitHub](https://github.com/glendont) | [LinkedIn](https://www.linkedin.com/in/glendonthaiw/))
+* Glendon Thaiw, AWS ([GitHub](https://github.com/glendont) | [LinkedIn](https://www.linkedin.com/in/glendonthaiw/))
 
-Shannon Lim, AWS ([GitHub](https://github.com/moose-in-australia/) | [LinkedIn](https://www.linkedin.com/in/shannonlim/))
+* Shannon Lim, AWS ([GitHub](https://github.com/moose-in-australia/) | [LinkedIn](https://www.linkedin.com/in/shannonlim/))
 
 ## 9. License
 

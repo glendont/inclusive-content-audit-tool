@@ -1,5 +1,5 @@
 # Inclusive Content Audit Tool 
-<p align="center"><img src="images/icat_logo.jpg" width="400" height="350"/>
+<p align="center"><img src="images/icat_logo.jpg" width="500" height="350"/>
 
 ## 1. Project Overview
 

@@ -1,0 +1,290 @@
+"Resources": {
+  "S3Bucket": {
+    "Type": "AWS::S3::Bucket",
+    "Properties": {
+      "BucketName": "inclusive-content-audit-tool2"
+    }
+  },
+  "TextToDocx2": {
+    "Type": "AWS::Lambda::Function",
+    "DependsOn": [
+      "TextToDocxRole2"
+    ],
+    "Properties": {
+      "Description": "Scans PDF documents that are uploaded to the S3 Bucket and converts it to DOCX format",
+      "FunctionName": "TextToDocx2",
+      "Handler": "index.lambda_handler",
+      "Role": {
+        "Fn::GetAtt": [
+          "TextToDocxRole2",
+          "Arn"
+        ]
+      },
+      "Runtime": "python3.6",
+      "Timeout": 180,
+      "Code": {
+        "ZipFile": {
+          "Fn::Join": [
+            "\n",
+            [
+              "import json",
+              "import boto3",
+              "import os",
+              "from docx import Document",
+              "def getJobResults(jobId): ",
+              "    print('getting job results')",
+              "    pages = []",
+              "    textract = boto3.client('textract')",
+              "    response = textract.get_document_text_detection(JobId=jobId)",
+              "    pages.append(response)",
+              "    next_token = None",
+              "    if('NextToken' in response):",
+              "        next_token = response['NextToken']",
+              "    while(next_token):",
+              "        response = textract.get_document_text_detection(JobId=jobId, NextToken=next_token)",
+              "        pages.append(response)",
+              "        next_token = None",
+              "        if('NextToken' in response):",
+              "            next_token = response['NextToken']",
+              "    print('processing done')",
+              "    return pages",
+              "def lambda_handler(event, context):",
+              "    print(event)",
+              "    notification_message = json.loads(json.dumps(event))['Records'][0]['Sns']['Message']",
+              "    notification_message = json.loads(notification_message)",
+              "    job_status = notification_message['Status']",
+              "    job_tag = notification_message['JobTag']",
+              "    job_id = notification_message['JobId']",
+              "    document_location = json.loads(json.dumps(notification_message['DocumentLocation']))",
+              "    s3_object = document_location['S3ObjectName']",
+              "    bucket = document_location['S3Bucket']",
+              "    print(job_tag + ' : ' + job_status)",
+              "    pdf_text = ''",
+              "    if(job_status == 'SUCCEEDED'):",
+              "        response = getJobResults(job_id)",
+              "        print('iterating through pages')",
+              "        for resultPage in response:",
+              "            for item in resultPage['Blocks']:",
+              "                if item['BlockType'] == 'LINE':",
+              "                    pdf_text += item['Text'] + '\n'",
+              "        file_name_no_suffix = s3_object.split('/')[-1].split('.')[-2]",
+              "        doc = Document()",
+              "        doc_para = doc.add_paragraph()",
+              "        doc_para.add_run(pdf_text)",
+              "        file_name = file_name_no_suffix + '.docx'",
+              "        save_name = f'input/{file_name}'",
+              "        file_path = f'/tmp/{file_name}'",
+              "        doc.save(file_path)",
+              "        print('results successfully saved')",
+              "        s3 = boto3.client('s3')",
+              "        s3.upload_file(file_path, bucket, save_name)",
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "TextExtract2": {
+    "Type": "AWS::Lambda::Function",
+    "DependsOn": [
+      "TextExtractRole2"
+    ],
+    "Properties": {
+      "Description": "Scans PDF documents that are uploaded to the S3 Bucket and converts it to DOCX format",
+      "FunctionName": "TextExtract2",
+      "Handler": "index.lambda_handler",
+      "Role": {
+        "Fn::GetAtt": [
+          "TextExtractRole2",
+          "Arn"
+        ]
+      },
+      "Runtime": "python3.6",
+      "Timeout": 180,
+      "Code": {
+        "ZipFile": {
+          "Fn::Join": [
+            "\n",
+            [
+              "import json",
+              "import boto3",
+              "import os",
+              "import urllib.parse",
+              "def lambda_handler(event, context):",
+              "    file_obj = event['Records'][0]",
+              "    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'])",
+              "    filename = key.split('/')[-1]",
+              "    print(key, 'key')",
+              "    print(filename, 'filename')",
+              "    bucket = event['Records'][0]['s3']['bucket']['name']",
+              "    print(bucket)",
+              "    try:",
+              "        textract = boto3.client('textract')",
+              "        response = textract.start_document_text_detection(",
+              "        DocumentLocation={",
+              "            'S3Object': {",
+              "                'Bucket': bucket,",
+              "                'Name': key,",
+              "            }",
+              "        },",
+              "        JobTag=filename + '_Job',",
+              "        NotificationChannel={",
+              "            'RoleArn': 'YOUR-ARN-SNSFullAccess',",
+              "            'SNSTopicArn': 'YOUR-ARN-AWSTextract'",
+              "        })",
+              "        job_id = response['JobId']",
+              "        print(job_id)",
+              "        print('triggered')",
+              "        return 'Triggered PDF Processing for ' + filename",
+              "    except Exception as e:",
+              "        print(e)",
+              "        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))",
+              "        raise e",
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "highlightText2": {
+    "Type": "AWS::Lambda::Function",
+    "DependsOn": [
+      "highlightTextRole2"
+    ],
+    "Properties": {
+      "Description": "Scans PDF documents that are uploaded to the S3 Bucket and converts it to DOCX format",
+      "FunctionName": "highlightText2",
+      "Handler": "index.lambda_handler",
+      "Role": {
+        "Fn::GetAtt": [
+          "highlightTextRole2",
+          "Arn"
+        ]
+      },
+      "Runtime": "python3.6",
+      "Timeout": 180,
+      "Code": {
+        "ZipFile": {
+          "Fn::Join": [
+            "\n",
+            ["#Add code from github etc"]
+          ]
+        }
+      }
+    }
+  },
+  "highlightTextRole2": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          },
+        ]
+      },
+      "ManagedPolicyArns": [
+        "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+      ]
+    }
+  },
+  "TextToDocxRole2": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          },
+        ]
+      },
+      "ManagedPolicyArns": [
+        "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+        "arn:aws:iam::aws:policy/AmazonTextractFullAccess"
+      ]
+    }
+  },
+  "TextExtractRole2": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          },
+        ]
+      },
+      "ManagedPolicyArns": [
+        "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+        "arn:aws:iam::aws:policy/AmazonTextractFullAccess"
+      ]
+    }
+  },
+  "SNSFullAccess2": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          },
+        ]
+      },
+      "ManagedPolicyArns": [
+        "arn:aws:iam::aws:policy/AmazonSNSFullAccess",
+      ]
+    }
+  },
+  "AWSTextract2": {
+    "Type": "AWS::SNS::Topic",
+    "Properties": {
+      "Subscription": [
+        {
+          "Endpoint": {
+            "Fn::GetAtt": [
+              "TextToDocx2",
+              "Arn"
+            ]
+          },
+          "Protocol": "lambda"
+        }
+      ]
+    }
+  },
+}

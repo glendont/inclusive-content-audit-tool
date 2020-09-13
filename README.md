@@ -196,11 +196,11 @@ Please follow the below steps after downloading the code to set up
     - Click Add
 - Check that TextToDocxchange has the assigned role “TextToDocxRole”
     
-### 6.3 Pre-Setup
+### 6.3 Uninstall
 
 **[AWS] Before Deleting the CloudFormation Stack**
 - Make sure the S3 Bucket "inclusive-content-audit-tool" is empty before deleting the Stack, otherwise it will fail.
-    - Delete the Cloudformation stack - "ICAT"
+    - Delete the CloudFormation stack - "ICAT"
 
 ## 7. FAQ
 
